@@ -8,6 +8,7 @@ emcc src/main.c src/rope.c \
     -s ASYNCIFY \
     -s ALLOW_MEMORY_GROWTH=1 \
     -s FORCE_FILESYSTEM=1 \
+	-s INITIAL_MEMORY=256mb \
     -s EXPORTED_FUNCTIONS="['_main']" \
     -s EXPORTED_RUNTIME_METHODS="['ccall','cwrap']" \
 	--shell-file minshell.html \

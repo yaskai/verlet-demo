@@ -27,8 +27,8 @@ typedef struct {
 	float segment_dist;
 	float dampening;
 
-	//RopeNode *nodes;
-	RopeNode nodes[RLEN];
+	RopeNode *nodes;
+	//RopeNode nodes[RLEN];
 } Rope;
 
 void RopeInit(Rope *rope, Vector2 pos);

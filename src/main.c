@@ -3,6 +3,7 @@
 #include "rope.h"
 
 int main() {
+	SetTraceLogLevel(LOG_NONE);
 	SetConfigFlags(FLAG_WINDOW_HIGHDPI);
 
 	InitWindow(1280, 800, "Verlet demo");
@@ -24,7 +25,7 @@ int main() {
 	}
 
 	CloseWindow();
-	//RopeClose(&rope);
+	RopeClose(&rope);
 
 	return 0;
 }

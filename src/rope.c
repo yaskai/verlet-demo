@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include "raylib.h"
 #include "raymath.h"
 #include "rope.h"
@@ -13,7 +14,7 @@ void RopeInit(Rope *rope, Vector2 pos) {
 	
 	rope->segment_dist = 2.0f;
 
-	//rope->nodes = (RopeNode*)malloc(sizeof(RopeNode) * rope->length);
+	rope->nodes = MemAlloc(sizeof(RopeNode) * RLEN); 
 
 	rope->nodes[0] = (RopeNode) {
 		.flags = (RN_PINNED),
@@ -54,8 +55,6 @@ void RopeIntegrate(Rope *rope, float dt) {
 				rope->selected_node = -1;
 		}
 
-		if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) rope->selected_node = -1;
-
 		if(node->flags & RN_PINNED) node->pos_curr = node->pos_prev;
 
 		if(rope->selected_node == i) {
@@ -69,6 +68,8 @@ void RopeIntegrate(Rope *rope, float dt) {
 
 		node->pos_prev = new_prev;
 	}
+
+	if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) rope->selected_node = -1;
 }
 
 void RopeSolveConstraints(Rope *rope, float dt) {
@@ -119,6 +120,6 @@ void RopeDraw(Rope *rope) {
 }
 
 void RopeClose(Rope *rope) {
-	//free(rope->nodes);
+	free(rope->nodes);
 }
 
