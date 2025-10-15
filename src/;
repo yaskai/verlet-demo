@@ -108,19 +108,11 @@ void SliderUpate(Slider *slider) {
 }
 
 void SliderDraw(Slider *slider) {
-	Color handle_bg = (slider->flags & SLIDER_PRESSED) ? RAYWHITE : LIGHTGRAY;
-
 	DrawRectangleRec(slider->rec_base, DARKGRAY);
+	DrawRectangleRec(slider->rec_ctrl, LIGHTGRAY);
 
-	Rectangle base_shadow = (Rectangle){ slider->rec_base.x, slider->rec_base.y + slider->rec_base.height - 4, slider->rec_base.width, 4 };
-	DrawRectangleRec(base_shadow, ColorBrightness(DARKGRAY, -0.25f));
-
-	DrawRectangleRec(slider->rec_ctrl, handle_bg);
-	
-	Rectangle handle_shadow = (Rectangle){ slider->rec_ctrl.x, slider->rec_ctrl.y + slider->rec_ctrl.height - 6, slider->rec_ctrl.width, 6 };
-	DrawRectangleRec(handle_shadow, ColorBrightness(handle_bg, -0.25f));
-	
-	DrawText(TextFormat("%s: %.3f", slider->text, *slider->control), slider->rec_base.x + 10, slider->rec_base.y - 20, 18, SKYBLUE);
+	DrawText(TextFormat("%s: %f", slider->text, *slider->control), slider->rec_base.x, slider->rec_base.y - 20, 18, GREEN);
+	//DrawText(TextFormat("%f", *slider->control), slider->rec_base.x, slider->rec_base.y + 60, 18, GREEN);
 }
 
 float HandlePosFromVal(Slider *slider) {

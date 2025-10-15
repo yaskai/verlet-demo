@@ -8,16 +8,27 @@
 
 void RopeInit(Rope *rope, Vector2 pos) {
 	rope->length = RLEN;
+
 	rope->iteration_steps = 16;
+	rope->controls[CTRL_ITERATIONS] = (float)rope->iteration_steps;
 
 	rope->selected_node = -1;
+
+	rope->allow_move = true;
 	
 	rope->segment_dist = 2.0f;
+	rope->controls[CTRL_SEGLENGTH] = rope->segment_dist;
+
+	rope->dampening = 0.995f;
+	rope->controls[CTRL_DAMPENING] = rope->dampening;
+	
+	rope->gravity = GRAVITY;
+	rope->controls[CTRL_GRAVITY] = GRAVITY.y;
 
 	rope->nodes = MemAlloc(sizeof(RopeNode) * RLEN); 
 
 	rope->nodes[0] = (RopeNode) {
-		.flags = (RN_PINNED),
+		.flags = (NODE_PINNED),
 		.pos_prev = pos,
 		.pos_curr = pos
 	};
@@ -38,16 +49,14 @@ void RopeIntegrate(Rope *rope, float dt) {
 		Vector2 new_prev = node->pos_curr;
 
 		Vector2 vel = Vector2Subtract(node->pos_curr, node->pos_prev);	
-		vel = Vector2Scale(vel, 0.995f);
-		Vector2 accel = Vector2Scale(GRAVITY, dt2);
+		vel = Vector2Scale(vel, rope->dampening);
+		Vector2 accel = Vector2Scale(rope->gravity, dt2);
 		
-		//vel = Vector2ClampValue(vel, -240, 240);
-
 		node->pos_curr = Vector2Add(Vector2Add(node->pos_curr, vel), accel);
 
-		if(IsMouseButtonDown(MOUSE_BUTTON_LEFT) && rope->selected_node == -1) {
+		if(IsMouseButtonDown(MOUSE_BUTTON_LEFT) && rope->selected_node == -1 && rope->allow_move) {
 			float seg_dist = (i == 0) ? rope->segment_dist : rope->segment_dist * 2;
-			float r = fmaxf(rope->segment_dist, rope->segment_dist * Vector2Length(mouse_delta));
+			float r = fmaxf(4.0f, rope->segment_dist * Vector2Length(mouse_delta));
 
 			if(CheckCollisionPointCircle(mouse_pos, node->pos_curr, r)) 
 				rope->selected_node = i;
@@ -55,16 +64,16 @@ void RopeIntegrate(Rope *rope, float dt) {
 				rope->selected_node = -1;
 		}
 
-		if(node->flags & RN_PINNED) node->pos_curr = node->pos_prev;
+		if(node->flags & NODE_PINNED) node->pos_curr = node->pos_prev;
+		if(!rope->allow_move) rope->selected_node = -1;
 
-		if(rope->selected_node == i) {
+		if(rope->selected_node == i && rope->allow_move) {
 			node->pos_curr = mouse_pos;
 			node->pos_prev = mouse_pos;
 			new_prev = mouse_pos;
 		}
 
-		node->pos_curr.x = Clamp(node->pos_curr.x, 0, 1280);
-		node->pos_curr.y = Clamp(node->pos_curr.y, 0, 800);
+		node->pos_curr = Vector2Clamp(node->pos_curr, (Vector2){220, 0}, (Vector2){1280, 800});
 
 		node->pos_prev = new_prev;
 	}
@@ -86,9 +95,9 @@ void RopeSolveConstraints(Rope *rope, float dt) {
 		Vector2 prev_a = node_a->pos_curr;
 		Vector2 prev_b = node_b->pos_curr;
 		
-		if(node_a->flags & RN_PINNED || rope->selected_node == i) 
+		if(node_a->flags & NODE_PINNED || rope->selected_node == i) 
 			node_b->pos_curr = Vector2Add(node_b->pos_curr, Vector2Scale(delta, correction));	
-		else if (node_b->flags & RN_PINNED 	|| rope->selected_node == i)
+		else if (node_b->flags & NODE_PINNED 	|| rope->selected_node == i)
 			node_a->pos_curr = Vector2Add(node_b->pos_curr, Vector2Scale(delta, correction));	
 
 		if(!Vector2Equals(prev_a, node_a->pos_curr) || !Vector2Equals(prev_b,  node_b->pos_curr)) continue;
@@ -100,6 +109,11 @@ void RopeSolveConstraints(Rope *rope, float dt) {
 
 void RopeUpdate(Rope *rope, float dt) {
 	rope->nodes[0].pos_prev = rope->nodes[0].pos_curr;
+
+	rope->iteration_steps = (uint8_t)rope->controls[CTRL_ITERATIONS];
+	rope->segment_dist = rope->controls[CTRL_SEGLENGTH];
+	rope->dampening = 1 - (rope->controls[CTRL_DAMPENING] * 0.01f);
+	rope->gravity.y = rope->controls[CTRL_GRAVITY];
 
 	for(uint8_t i = 0; i < rope->iteration_steps; i++) {
 		RopeIntegrate(rope, dt);

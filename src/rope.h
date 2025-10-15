@@ -4,8 +4,16 @@
 #ifndef ROPE_H_
 #define ROPE_H_
 
-#define RLEN		255
-#define RN_PINNED	0x01
+#define RLEN 255
+
+#define NODE_PINNED			0x01
+
+enum CONTROLS : uint8_t {
+	CTRL_ITERATIONS,
+	CTRL_SEGLENGTH,
+	CTRL_DAMPENING,
+	CTRL_GRAVITY
+};
 
 typedef struct {
 	uint8_t flags;
@@ -15,20 +23,21 @@ typedef struct {
 } RopeNode;
 
 typedef struct {
-	float max_dist;
-} RopeSegment;
-
-typedef struct {
 	uint8_t length;
 	uint8_t iteration_steps;
+
+	bool allow_move;
 	
 	int16_t selected_node;
 
 	float segment_dist;
 	float dampening;
 
+	Vector2 gravity;
+
 	RopeNode *nodes;
-	//RopeNode nodes[RLEN];
+
+	float controls[4];
 } Rope;
 
 void RopeInit(Rope *rope, Vector2 pos);

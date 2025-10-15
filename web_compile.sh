@@ -1,4 +1,4 @@
-emcc src/main.c src/rope.c \
+emcc src/main.c src/rope.c src/ui.c \
     /home/kai/raylib/src/libraylib.web.a \
     -I/home/kai/raylib/src \
     -O2 \
